@@ -28,19 +28,19 @@ export function PopularityScatter({ homes, derived }: Props) {
     label: h.address.split(' ')[0],
     address: h.address,
     pricePerM2: Math.round(derived[i].pricePerM2),
-    days: h.popularity.daysOnFunda ?? 0,
+    viewsPerDay: Math.round(derived[i].viewsPerDay ?? 0),
     m2: h.m2
   }));
 
   const avgPpm =
     points.reduce((s, p) => s + p.pricePerM2, 0) / Math.max(points.length, 1);
-  const avgDays =
-    points.reduce((s, p) => s + p.days, 0) / Math.max(points.length, 1);
+  const avgVpd =
+    points.reduce((s, p) => s + p.viewsPerDay, 0) / Math.max(points.length, 1);
 
   return (
     <Card
       title="Populariteit vs prijs/m²"
-      subtitle="X = €/m², Y = dagen op Funda (hoger = kouder = meer biedmarge). Bubbel = m²."
+      subtitle="X = €/m², Y = views/dag (hoger = heter = minder biedmarge). Bubbel = m²."
     >
       <div className="h-72 w-full">
         <ResponsiveContainer>
@@ -64,18 +64,18 @@ export function PopularityScatter({ homes, derived }: Props) {
             />
             <YAxis
               type="number"
-              dataKey="days"
-              name="dagen op Funda"
+              dataKey="viewsPerDay"
+              name="views per dag"
               stroke="#7b8794"
               fontSize={11}
               label={{
-                value: 'Dagen op Funda',
+                value: 'Views / dag',
                 angle: -90,
                 position: 'insideLeft',
                 fill: '#7b8794',
                 fontSize: 11
               }}
-              domain={[0, 'dataMax + 5']}
+              domain={[0, 'dataMax + 20']}
             />
             <ZAxis type="number" dataKey="m2" range={[200, 800]} />
             <Tooltip
@@ -88,7 +88,7 @@ export function PopularityScatter({ homes, derived }: Props) {
               formatter={(v: any, name: string) => {
                 if (name === 'pricePerM2')
                   return [`€${v.toLocaleString('nl-NL')}`, '€/m²'];
-                if (name === 'days') return [`${v} dagen`, 'op Funda'];
+                if (name === 'viewsPerDay') return [`${v} views/dag`, 'heat'];
                 if (name === 'm2') return [`${v} m²`, 'oppervlakte'];
                 return [v, name];
               }}
@@ -107,7 +107,7 @@ export function PopularityScatter({ homes, derived }: Props) {
               }}
             />
             <ReferenceLine
-              y={avgDays}
+              y={avgVpd}
               stroke="#7b8794"
               strokeDasharray="2 4"
             />
@@ -128,23 +128,23 @@ export function PopularityScatter({ homes, derived }: Props) {
       <div className="mt-3 grid grid-cols-2 gap-2 text-xs text-muted md:grid-cols-4">
         <Quadrant
           color="#34d399"
-          label="Linksboven"
+          label="Linksonder"
           hint="Goedkoop + koud = beste bod-marge"
         />
         <Quadrant
-          color="#fbbf24"
-          label="Rechtsboven"
-          hint="Duur maar koud"
-        />
-        <Quadrant
           color="#94a3b8"
-          label="Linksonder"
+          label="Linksboven"
           hint="Goedkoop maar hot"
         />
         <Quadrant
-          color="#f87171"
+          color="#fbbf24"
           label="Rechtsonder"
-          hint="Duur + hot — overbieden"
+          hint="Duur maar koud"
+        />
+        <Quadrant
+          color="#f87171"
+          label="Rechtsboven"
+          hint="Duur + hot — overbieden nodig"
         />
       </div>
     </Card>

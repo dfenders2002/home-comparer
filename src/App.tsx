@@ -12,7 +12,7 @@ import {
 
 import { HOMES } from './data/homes';
 import { DEFAULTS } from './data/constants';
-import { derive, popularityScores } from './lib/derived';
+import { derive } from './lib/derived';
 
 import { ControlsPanel, GlobalControls } from './components/ControlsPanel';
 import { ComparisonTable } from './components/ComparisonTable';
@@ -23,6 +23,7 @@ import { PopularityScatter } from './components/PopularityScatter';
 import { RadarOverlay } from './components/RadarOverlay';
 import { ProsConsCards } from './components/ProsConsCards';
 import { BidStrip } from './components/BidStrip';
+import { HeatIndicator } from './components/HeatIndicator';
 
 const TABS = [
   { id: 'overview',   label: 'Overzicht',   icon: HomeIcon },
@@ -50,11 +51,7 @@ export default function App() {
     Object.fromEntries(HOMES.map((h) => [h.id, h.askPrice]))
   );
 
-  const popScores = useMemo(() => popularityScores(HOMES), []);
-  const derived = useMemo(
-    () => HOMES.map((h) => derive(h, popScores[h.id])),
-    [popScores]
-  );
+  const derived = useMemo(() => HOMES.map((h) => derive(h)), []);
 
   const updateControls = (patch: Partial<GlobalControls>) =>
     setControls((c) => ({ ...c, ...patch }));
@@ -117,10 +114,12 @@ export default function App() {
           <Tabs.Content value="overview" className="space-y-4 focus:outline-none">
             <BidStrip
               homes={HOMES}
+              derived={derived}
               bids={bids}
               onBidChange={(id, v) => setBids((b) => ({ ...b, [id]: v }))}
               controls={controls}
             />
+            <HeatIndicator homes={HOMES} derived={derived} />
             <ComparisonTable
               homes={HOMES}
               derived={derived}
@@ -142,10 +141,11 @@ export default function App() {
 
           {/* BIDS */}
           <Tabs.Content value="bids" className="space-y-4 focus:outline-none">
-            {HOMES.map((h) => (
+            {HOMES.map((h, i) => (
               <BidSimulator
                 key={h.id}
                 home={h}
+                derived={derived[i]}
                 bid={bids[h.id]}
                 onBidChange={updateBid(h.id)}
                 controls={controls}
@@ -168,7 +168,8 @@ export default function App() {
           </Tabs.Content>
 
           {/* POPULARITY */}
-          <Tabs.Content value="popularity" className="focus:outline-none">
+          <Tabs.Content value="popularity" className="space-y-4 focus:outline-none">
+            <HeatIndicator homes={HOMES} derived={derived} />
             <PopularityScatter homes={HOMES} derived={derived} />
           </Tabs.Content>
 

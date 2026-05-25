@@ -83,31 +83,40 @@ const ROWS: RowDef[] = [
   },
   {
     label: 'WOZ 2025',
-    pick: (h) => h.woz['2025'],
-    numeric: (h) => h.woz['2025'],
+    pick: (h) => h.woz?.['2025'] ?? '—',
+    numeric: (h) => h.woz?.['2025'] ?? Number.NEGATIVE_INFINITY,
     higherBetter: true,
-    fmt: fmtEURk
+    fmt: (v) => (Number.isFinite(v) ? fmtEURk(v) : '—')
   },
   {
     label: 'WOZ groei \'23→\'25',
-    pick: (_h, d) => d.wozGrowth23to25Pct,
-    numeric: (_h, d) => d.wozGrowth23to25Pct,
+    pick: (_h, d) => (d.wozGrowth23to25Pct ?? null) === null ? '—' : (d.wozGrowth23to25Pct as number),
+    numeric: (_h, d) => d.wozGrowth23to25Pct ?? Number.NEGATIVE_INFINITY,
     higherBetter: true,
-    fmt: (v) => `+${v.toFixed(1)}%`
+    fmt: (v) => (Number.isFinite(v) ? `+${v.toFixed(1)}%` : '—')
   },
   {
     label: 'Huispedia p60',
-    pick: (h) => h.huispedia.p60,
-    numeric: (h) => h.huispedia.p60,
+    pick: (h) => h.huispedia?.p60 ?? '—',
+    numeric: (h) => h.huispedia?.p60 ?? Number.NEGATIVE_INFINITY,
     higherBetter: true,
-    fmt: fmtEURk
+    fmt: (v) => (Number.isFinite(v) ? fmtEURk(v) : '—')
   },
   {
     label: 'Waarde-marge (p60 − bod)',
-    pick: (h, _d, ctx) => h.huispedia.p60 - (ctx.bids[h.id] ?? h.askPrice),
-    numeric: (h, _d, ctx) => h.huispedia.p60 - (ctx.bids[h.id] ?? h.askPrice),
+    pick: (h, _d, ctx) =>
+      h.huispedia ? h.huispedia.p60 - (ctx.bids[h.id] ?? h.askPrice) : '—',
+    numeric: (h, _d, ctx) =>
+      h.huispedia
+        ? h.huispedia.p60 - (ctx.bids[h.id] ?? h.askPrice)
+        : Number.NEGATIVE_INFINITY,
     higherBetter: true,
-    fmt: (v) => (v >= 0 ? `+${fmtEURk(v)}` : `−€${Math.round(Math.abs(v) / 1000)}K`)
+    fmt: (v) =>
+      !Number.isFinite(v)
+        ? '—'
+        : v >= 0
+        ? `+${fmtEURk(v)}`
+        : `−€${Math.round(Math.abs(v) / 1000)}K`
   },
   {
     label: 'Eigen geld nodig',
@@ -136,11 +145,40 @@ const ROWS: RowDef[] = [
     fmt: (v) => `€${Math.round(v).toLocaleString('nl-NL')}`
   },
   {
+    label: 'Renovatie nodig',
+    pick: (h) => h.renovationEstimate ?? 0,
+    numeric: (h) => h.renovationEstimate ?? 0,
+    higherBetter: false,
+    fmt: (v) => (v > 0 ? `€${Math.round(v / 1000)}K` : '—')
+  },
+  {
+    label: 'Cash totaal (eg + renov)',
+    pick: (h, _d, ctx) => {
+      const bid = ctx.bids[h.id] ?? h.askPrice;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      return eg + (h.renovationEstimate ?? 0);
+    },
+    numeric: (h, _d, ctx) => {
+      const bid = ctx.bids[h.id] ?? h.askPrice;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      return eg + (h.renovationEstimate ?? 0);
+    },
+    higherBetter: false,
+    fmt: (v) => fmtEUR(v)
+  },
+  {
     label: 'Dagen op Funda',
     pick: (h) => h.popularity.daysOnFunda ?? '?',
     numeric: (h) => h.popularity.daysOnFunda ?? 0,
     higherBetter: true,
     fmt: (v) => `${v} d`
+  },
+  {
+    label: 'Views / dag (markt-heat)',
+    pick: (_h, d) => (d.viewsPerDay != null ? Math.round(d.viewsPerDay) : '—'),
+    numeric: (_h, d) => d.viewsPerDay ?? 0,
+    higherBetter: false,                // lower = cooler = better for buyer
+    fmt: (v) => `${Math.round(v)}/d`
   }
 ];
 
@@ -179,8 +217,19 @@ export function ComparisonTable({ homes, derived, bids, controls }: Props) {
           <tbody>
             {ROWS.map((row, ri) => {
               const nums = homes.map((h, i) => row.numeric(h, derived[i], ctx));
-              const best = row.higherBetter ? Math.max(...nums) : Math.min(...nums);
-              const worst = row.higherBetter ? Math.min(...nums) : Math.max(...nums);
+              const finiteNums = nums.filter((n) => Number.isFinite(n));
+              const best =
+                finiteNums.length > 0
+                  ? row.higherBetter
+                    ? Math.max(...finiteNums)
+                    : Math.min(...finiteNums)
+                  : NaN;
+              const worst =
+                finiteNums.length > 0
+                  ? row.higherBetter
+                    ? Math.min(...finiteNums)
+                    : Math.max(...finiteNums)
+                  : NaN;
               return (
                 <tr
                   key={ri}
@@ -192,18 +241,19 @@ export function ComparisonTable({ homes, derived, bids, controls }: Props) {
                   {homes.map((h, ci) => {
                     const v = nums[ci];
                     const raw = row.pick(h, derived[ci], ctx);
-                    const isBest = v === best && best !== worst;
-                    const isWorst = v === worst && best !== worst;
+                    const isFinite = Number.isFinite(v);
+                    const isBest = isFinite && v === best && best !== worst;
+                    const isWorst = isFinite && v === worst && best !== worst;
                     const bg = isBest
                       ? 'bg-good/15 text-good'
                       : isWorst
                       ? 'bg-bad/15 text-bad'
                       : 'text-text';
                     const display =
-                      typeof raw === 'number' && row.fmt
-                        ? row.fmt(v)
-                        : typeof raw === 'string'
+                      typeof raw === 'string'
                         ? raw
+                        : typeof raw === 'number' && row.fmt
+                        ? row.fmt(v)
                         : v.toString();
                     return (
                       <td

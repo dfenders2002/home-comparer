@@ -13,12 +13,13 @@ export interface Home {
   vveMonthly: number;
   ownParking: boolean;
   outdoorSpace?: string;        // e.g. "ZW-balkon", "tuin"
-  woz: { '2023': number; '2024': number; '2025': number };
-  huispedia: { p40: number; p60: number; p80: number };
+  woz?: { '2023': number; '2024': number; '2025': number };
+  huispedia?: { p40: number; p60: number; p80: number };
   popularity: {
-    viewsPerDay?: number;
+    viewsTotal?: number;
     saves?: number;
     daysOnFunda?: number;
+    listedOn?: string;        // ISO date
   };
   monthlyExtras?: {
     gas?: number;
@@ -26,6 +27,7 @@ export interface Home {
     water?: number;
     otherFixed?: number;
   };
+  renovationEstimate?: number;  // EUR to bring up to standard (floor/kitchen/paint)
   notes?: string;
   pros?: string[];
   cons?: string[];
@@ -48,10 +50,15 @@ export const HOMES: Home[] = [
     energyLabel: 'A',
     vveMonthly: 160,
     ownParking: false,
-    outdoorSpace: 'balkon',
+    outdoorSpace: 'balkon-oost',
     woz: { '2023': 270_000, '2024': 275_000, '2025': 316_000 },
     huispedia: { p40: 388_000, p60: 399_000, p80: 412_000 },
-    popularity: { daysOnFunda: 7 },
+    popularity: {
+      viewsTotal: 1055,
+      saves: 26,
+      daysOnFunda: 5,
+      listedOn: '2026-05-20'
+    },
     pros: [
       'Goedkoopst van de drie',
       'Past makkelijk binnen hypotheek',
@@ -75,24 +82,31 @@ export const HOMES: Home[] = [
     m2: 87,
     bouwjaar: 2016,
     energyLabel: 'A+',
-    vveMonthly: 256,
+    vveMonthly: 216,                 // €176 appartement + €40,30 parkeerplaats
     ownParking: true,
-    outdoorSpace: 'ZW-balkon',
+    outdoorSpace: 'ZW-balkon (9m²)',
     woz: { '2023': 347_000, '2024': 369_000, '2025': 449_000 },
     huispedia: { p40: 464_000, p60: 478_000, p80: 494_000 },
-    popularity: { daysOnFunda: 20 },
+    popularity: {
+      viewsTotal: 2330,
+      saves: 17,
+      daysOnFunda: 20,
+      listedOn: '2026-05-05'
+    },
+    renovationEstimate: 18_000,      // vloer + keuken + muren verven
     pros: [
       'Grootst (87m²)',
       'Beste prijs/m² (€5.057)',
       'Naast NS-station Alphen',
       'Eigen parkeerplek in garage',
-      'ZW-balkon',
-      '20 dagen op Funda → ruimte om onder te bieden'
+      'ZW-balkon met vrij uitzicht',
+      'Volledig geïsoleerd, label A+',
+      'Koudste markt (20 dagen, lage views/dag) → biedmarge'
     ],
     cons: [
-      'Drukke weg in omschrijving',
-      'Hoogste VvE (€256)',
-      'Vraagprijs boven max hypotheek → extra eigen geld'
+      'Aan drukke weg',
+      'Renovatie nodig: vloer, keuken, muren (~€18K)',
+      'Vraagprijs boven max hypotheek bij label B-cap (maar past wel binnen A+ cap)'
     ]
   },
   {
@@ -104,12 +118,18 @@ export const HOMES: Home[] = [
     m2: 85,
     bouwjaar: 2022,
     energyLabel: 'A++',
-    vveMonthly: 180,
+    vveMonthly: 206,                 // €206,37 — pure VvE bijdrage
+    monthlyExtras: { gas: 134 },     // stookkosten inbegrepen via VvE-totaal €340
     ownParking: true,
-    outdoorSpace: 'balkon',
+    outdoorSpace: 'balkon-west',
     woz: { '2023': 368_000, '2024': 401_000, '2025': 459_000 },
     huispedia: { p40: 502_000, p60: 517_000, p80: 534_000 },
-    popularity: { daysOnFunda: 4 },
+    popularity: {
+      viewsTotal: 1435,
+      saves: 17,
+      daysOnFunda: 6,
+      listedOn: '2026-05-19'
+    },
     pros: [
       'Nieuwste (2022)',
       'Beste label (A++)',
@@ -122,6 +142,44 @@ export const HOMES: Home[] = [
       'Hoogste prijs/m² (€5.635)',
       'Wijk is bedrijventerrein-achtig',
       'Hoge concurrentie verwacht'
+    ]
+  },
+  {
+    id: 'sacharovlaan-41',
+    address: 'Dr. A.D. Sacharovlaan 41',
+    city: 'Alphen aan den Rijn',
+    fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-dr-a-d-sacharovlaan-41/',
+    askPrice: 400_000,
+    m2: 84,
+    bouwjaar: 1994,
+    energyLabel: 'A',
+    vveMonthly: 268,
+    monthlyExtras: { gas: 60 },      // "gas/elektra slechts €60/mnd"
+    ownParking: false,
+    outdoorSpace: 'zonnig balkon',
+    // WOZ + huispedia nog niet aangeleverd — vul aan zodra beschikbaar
+    woz: undefined,
+    huispedia: undefined,
+    popularity: {
+      viewsTotal: 3248,
+      saves: 25,
+      daysOnFunda: 32,
+      listedOn: '2026-04-23'
+    },
+    renovationEstimate: 18_000,      // vloer + keuken + muren verven
+    pros: [
+      'Goedkoopst per m² (€4.762)',
+      '84m² ruime indeling',
+      'Lage energiekosten (€60/mnd gas+elektra)',
+      'Lift in complex, inpandige berging',
+      'Centraal — loopafstand centrum + NS-station',
+      '32 dagen op Funda → koudste van de 4 → biedmarge'
+    ],
+    cons: [
+      'Hoogste VvE (€268)',
+      'Geen eigen parkeerplek',
+      'Renovatie nodig: vloer, keuken, muren (~€18K)',
+      'Bouwjaar 1994 (op één na oudste)'
     ]
   }
 ];
