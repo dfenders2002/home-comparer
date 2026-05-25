@@ -8,7 +8,6 @@ export interface GlobalControls {
   ownMoneyBudgetK: number;
   exitHorizonYears: number;
   growthPctPerYear: number;
-  taxatieShortfallPct: number;
 }
 
 interface Props {
@@ -22,7 +21,7 @@ export function ControlsPanel({ values, onChange }: Props) {
       title="Globale aannames"
       subtitle="Sleep om alle berekeningen live aan te passen"
     >
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-6">
         <Slider
           label="Hypotheekrente"
           value={values.ratePct}
@@ -78,17 +77,6 @@ export function ControlsPanel({ values, onChange }: Props) {
           step={0.5}
           formatValue={(v) => `${v.toFixed(1)}%/jr`}
           onChange={(v) => onChange({ growthPctPerYear: v })}
-        />
-        <Slider
-          label="Taxatie tegenvallend"
-          value={values.taxatieShortfallPct}
-          min={0}
-          max={10}
-          step={0.5}
-          formatValue={(v) => (v === 0 ? 'gelijk aan bod' : `−${v.toFixed(1)}%`)}
-          onChange={(v) => onChange({ taxatieShortfallPct: v })}
-          hint="Stress-test: hoeveel onder bod komt taxatie?"
-          accent="#fbbf24"
         />
       </div>
     </Card>

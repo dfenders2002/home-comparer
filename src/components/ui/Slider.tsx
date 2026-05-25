@@ -29,7 +29,7 @@ export function Slider({
   step = 1,
   formatValue,
   hint,
-  accent = '#6ee7b7',
+  accent = '#7b8794',          // muted slate by default
   markers
 }: SliderProps) {
   const span = max - min || 1;
@@ -39,7 +39,7 @@ export function Slider({
     <div className="space-y-1.5">
       <div className="flex items-baseline justify-between text-xs">
         <div className="font-medium text-text/80">{label}</div>
-        <div className="font-mono text-text" style={{ color: accent }}>
+        <div className="font-mono text-text">
           {formatValue ? formatValue(value) : value}
         </div>
       </div>
@@ -69,14 +69,13 @@ export function Slider({
               >
                 <div
                   className="h-3 w-px"
-                  style={{ background: m.color ?? '#6ee7b7', opacity: 0.7 }}
+                  style={{ background: m.color ?? '#9ca3af', opacity: 0.7 }}
                 />
               </div>
             );
           })}
           <RadixSlider.Thumb
-            className="block h-4 w-4 rounded-full border-2 border-bg shadow-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-bg"
-            style={{ background: accent, boxShadow: `0 0 0 1px ${accent}` }}
+            className="block h-4 w-4 rounded-full border-2 border-bg bg-text/90 shadow-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accent/40 focus:ring-offset-1 focus:ring-offset-bg"
             aria-label={typeof label === 'string' ? label : 'slider'}
           />
         </RadixSlider.Root>
@@ -93,7 +92,7 @@ export function Slider({
                   style={{
                     left: `${left}%`,
                     transform: 'translateX(-50%)',
-                    color: m.color ?? '#6ee7b7'
+                    color: m.color ?? '#9ca3af'
                   }}
                 >
                   {m.label}

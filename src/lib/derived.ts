@@ -73,6 +73,156 @@ export const HEAT_LABEL: Record<HeatLevel, string> = {
   'on-fire': 'Vuur'
 };
 
+export interface SignatureTag {
+  label: string;
+  detail: string;
+}
+
+/**
+ * Compute the standout positive characteristics of each home relative to the dataset.
+ * One home can win multiple dimensions; if a dimension has no clear winner we skip it.
+ */
+export function signatureTags(
+  homes: Home[],
+  derived: DerivedMetrics[]
+): Record<string, SignatureTag[]> {
+  const result: Record<string, SignatureTag[]> = Object.fromEntries(
+    homes.map((h) => [h.id, []])
+  );
+
+  const pushIf = (
+    winnerIdx: number,
+    label: string,
+    detail: string,
+    tie = false
+  ) => {
+    if (winnerIdx < 0 || tie) return;
+    result[homes[winnerIdx].id].push({ label, detail });
+  };
+
+  // Helper: index of max/min with tie detection (returns -1 on tie)
+  const argBest = (vals: number[], higherIsBetter: boolean): number => {
+    if (vals.length === 0) return -1;
+    let best = vals[0];
+    let bestIdx = 0;
+    let ties = 0;
+    for (let i = 1; i < vals.length; i++) {
+      const better = higherIsBetter ? vals[i] > best : vals[i] < best;
+      if (better) {
+        best = vals[i];
+        bestIdx = i;
+        ties = 0;
+      } else if (vals[i] === best) {
+        ties++;
+      }
+    }
+    return ties > 0 ? -1 : bestIdx;
+  };
+
+  // m² — biggest
+  pushIf(
+    argBest(homes.map((h) => h.m2), true),
+    'Grootst',
+    `${Math.max(...homes.map((h) => h.m2))}m²`
+  );
+
+  // Newest build year
+  pushIf(
+    argBest(homes.map((h) => h.bouwjaar), true),
+    'Nieuwst',
+    `${Math.max(...homes.map((h) => h.bouwjaar))}`
+  );
+
+  // Best energy label
+  const labelRanks = homes.map((h) => LABEL_RANK[h.energyLabel]);
+  const bestLabelIdx = argBest(labelRanks, true);
+  if (bestLabelIdx >= 0) {
+    pushIf(bestLabelIdx, 'Beste label', homes[bestLabelIdx].energyLabel);
+  }
+
+  // Lowest VvE
+  pushIf(
+    argBest(homes.map((h) => h.vveMonthly), false),
+    'Laagste VvE',
+    `€${Math.min(...homes.map((h) => h.vveMonthly))}/mnd`
+  );
+
+  // Cheapest €/m²
+  pushIf(
+    argBest(derived.map((d) => d.pricePerM2), false),
+    'Goedkoopst per m²',
+    `€${Math.round(Math.min(...derived.map((d) => d.pricePerM2)))}`
+  );
+
+  // Lowest absolute price
+  pushIf(
+    argBest(homes.map((h) => h.askPrice), false),
+    'Goedkoopst totaal',
+    `€${Math.round(Math.min(...homes.map((h) => h.askPrice)) / 1000)}K`
+  );
+
+  // Coolest market
+  const vpdVals = derived.map((d) => d.viewsPerDay ?? Infinity);
+  const coldestIdx = argBest(vpdVals, false);
+  if (coldestIdx >= 0 && derived[coldestIdx].viewsPerDay != null) {
+    pushIf(
+      coldestIdx,
+      'Koudste markt',
+      `${Math.round(derived[coldestIdx].viewsPerDay as number)}/d`
+    );
+  }
+
+  // Best value vs Huispedia p60
+  const valueVals = derived.map((d) =>
+    d.valueHeadroomEUR != null ? d.valueHeadroomEUR : -Infinity
+  );
+  const bestValueIdx = argBest(valueVals, true);
+  if (bestValueIdx >= 0 && derived[bestValueIdx].valueHeadroomEUR != null) {
+    pushIf(
+      bestValueIdx,
+      'Beste waarde-marge',
+      `+€${Math.round((derived[bestValueIdx].valueHeadroomEUR as number) / 1000)}K vs p60`
+    );
+  }
+
+  // Largest storage
+  const storageVals = homes.map((h) => h.storageM2 ?? 0);
+  if (Math.max(...storageVals) > Math.min(...storageVals)) {
+    pushIf(
+      argBest(storageVals, true),
+      'Grootste berging',
+      `${Math.max(...storageVals)}m²`
+    );
+  }
+
+  // Lowest renovation needed (only if some homes have renovation needed)
+  const renovVals = homes.map((h) => h.renovationEstimate ?? 0);
+  if (Math.max(...renovVals) > 0) {
+    const noRenovIdx = renovVals.findIndex((v) => v === 0);
+    if (noRenovIdx >= 0) {
+      result[homes[noRenovIdx].id].push({
+        label: 'Kant-en-klaar',
+        detail: 'geen renovatie nodig'
+      });
+    }
+  }
+
+  // Strongest WOZ growth
+  const wozGrowthVals = derived.map((d) =>
+    d.wozGrowth23to25Pct ?? -Infinity
+  );
+  const bestWozIdx = argBest(wozGrowthVals, true);
+  if (bestWozIdx >= 0 && derived[bestWozIdx].wozGrowth23to25Pct != null) {
+    pushIf(
+      bestWozIdx,
+      'Sterkste WOZ-groei',
+      `+${(derived[bestWozIdx].wozGrowth23to25Pct as number).toFixed(1)}% (\'23→\'25)`
+    );
+  }
+
+  return result;
+}
+
 /**
  * Radar vector — quality metrics only.
  * Popularity is NOT included (it's a market metric, not a home-quality metric).

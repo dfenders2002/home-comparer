@@ -16,6 +16,7 @@ interface RowDef {
 
 interface Ctx {
   bids: Record<string, number>;
+  taxaties: Record<string, number>;
   controls: GlobalControls;
 }
 
@@ -122,11 +123,11 @@ const ROWS: RowDef[] = [
     label: 'Eigen geld nodig',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
+      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.taxaties[h.id] ?? 0).total;
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
+      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.taxaties[h.id] ?? 0).total;
     },
     higherBetter: false,
     fmt: (v) => fmtEUR(v)
@@ -135,11 +136,11 @@ const ROWS: RowDef[] = [
     label: 'Maandlast totaal',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.controls.taxatieShortfallPct).total;
+      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.taxaties[h.id] ?? 0).total;
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.controls.taxatieShortfallPct).total;
+      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.taxaties[h.id] ?? 0).total;
     },
     higherBetter: false,
     fmt: (v) => `€${Math.round(v).toLocaleString('nl-NL')}`
@@ -155,12 +156,12 @@ const ROWS: RowDef[] = [
     label: 'Cash totaal (eg + renov)',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.taxaties[h.id] ?? 0).total;
       return eg + (h.renovationEstimate ?? 0);
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.taxaties[h.id] ?? 0).total;
       return eg + (h.renovationEstimate ?? 0);
     },
     higherBetter: false,
@@ -186,11 +187,12 @@ interface Props {
   homes: Home[];
   derived: DerivedMetrics[];
   bids: Record<string, number>;
+  taxaties: Record<string, number>;
   controls: GlobalControls;
 }
 
-export function ComparisonTable({ homes, derived, bids, controls }: Props) {
-  const ctx: Ctx = { bids, controls };
+export function ComparisonTable({ homes, derived, bids, taxaties, controls }: Props) {
+  const ctx: Ctx = { bids, taxaties, controls };
 
   return (
     <Card

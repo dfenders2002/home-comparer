@@ -9,32 +9,43 @@ import {
   totalMonthly
 } from '../lib/finance';
 import { DerivedMetrics, HEAT_COLOR, HEAT_LABEL } from '../lib/derived';
-import { ExternalLink, Flame } from 'lucide-react';
+import { Flame } from 'lucide-react';
 
 interface Props {
   home: Home;
   derived: DerivedMetrics;
   bid: number;
   onBidChange: (v: number) => void;
+  taxatieShortfallPct: number;
+  onTaxatieChange: (v: number) => void;
   controls: GlobalControls;
 }
 
-export function BidSimulator({ home, derived, bid, onBidChange, controls }: Props) {
+export function BidSimulator({
+  home,
+  derived,
+  bid,
+  onBidChange,
+  taxatieShortfallPct,
+  onTaxatieChange,
+  controls
+}: Props) {
   const pct = (bid / home.askPrice) * 100;
   const cap = mortgageCap(home.energyLabel);
   const eg = eigenGeldNeeded(
     bid,
     home.energyLabel,
     controls.kostenKoperPct,
-    controls.taxatieShortfallPct
+    taxatieShortfallPct
   );
   const monthly = totalMonthly(
     home,
     bid,
     controls.ratePct,
     controls.termYears,
-    controls.taxatieShortfallPct
+    taxatieShortfallPct
   );
+  const taxatieValue = bid * (1 - taxatieShortfallPct / 100);
   const renov = home.renovationEstimate ?? 0;
   const cashOut = eg.total + renov;
   const budget = controls.ownMoneyBudgetK * 1000;
@@ -63,17 +74,16 @@ export function BidSimulator({ home, derived, bid, onBidChange, controls }: Prop
     <Card
       title={
         <div className="flex items-center gap-2">
-          <span>{home.address}</span>
           <a
             href={home.fundaUrl}
             target="_blank"
             rel="noreferrer"
-            className="text-muted hover:text-accent"
+            className="underline-offset-4 hover:text-accent hover:underline"
           >
-            <ExternalLink size={13} />
+            {home.address}
           </a>
           <span
-            className="ml-2 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium"
+            className="ml-1 flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-medium"
             style={{
               background: HEAT_COLOR[derived.heat] + '22',
               color: HEAT_COLOR[derived.heat]
@@ -124,6 +134,30 @@ export function BidSimulator({ home, derived, bid, onBidChange, controls }: Prop
               {derived.suggestedBidPctRange[0]}–{derived.suggestedBidPctRange[1]}% van vraag
             </span>
           }
+        />
+
+        <Slider
+          label={
+            <span>
+              Geschatte taxatie ·{' '}
+              <span className="font-mono text-text">
+                {fmtEUR(taxatieValue)}
+              </span>
+            </span>
+          }
+          value={taxatieShortfallPct}
+          onChange={onTaxatieChange}
+          min={-2}
+          max={10}
+          step={0.5}
+          formatValue={(v) =>
+            v === 0
+              ? 'gelijk aan bod'
+              : v < 0
+              ? `+${Math.abs(v).toFixed(1)}%`
+              : `−${v.toFixed(1)}%`
+          }
+          hint="Hoe ver taxatie onder bod uitkomt → drijft eigen-geld omhoog"
         />
 
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

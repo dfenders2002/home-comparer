@@ -1,6 +1,6 @@
 import { Home } from '../data/homes';
 import { Card } from './ui/Card';
-import { Check, X, ExternalLink } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 interface Props {
   homes: Home[];
@@ -13,17 +13,14 @@ export function ProsConsCards({ homes }: Props) {
         <Card
           key={h.id}
           title={
-            <div className="flex items-center gap-2">
-              <span>{h.address}</span>
-              <a
-                href={h.fundaUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="text-muted hover:text-accent"
-              >
-                <ExternalLink size={13} />
-              </a>
-            </div>
+            <a
+              href={h.fundaUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline-offset-4 hover:text-accent hover:underline"
+            >
+              {h.address}
+            </a>
           }
           subtitle={
             <span>

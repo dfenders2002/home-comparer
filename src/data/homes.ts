@@ -1,10 +1,13 @@
 export type EnergyLabel =
   | 'G' | 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'A+' | 'A++' | 'A+++' | 'A++++';
 
+export type AptType = 'galerijflat' | 'portiekflat' | 'corridorflat' | 'maisonette' | 'penthouse';
+
 export interface Home {
   id: string;
   address: string;
   city: string;
+  neighborhood?: string;
   fundaUrl: string;
   askPrice: number;
   m2: number;
@@ -13,6 +16,10 @@ export interface Home {
   vveMonthly: number;
   ownParking: boolean;
   outdoorSpace?: string;        // e.g. "ZW-balkon", "tuin"
+  bedrooms?: number;
+  storageM2?: number;           // bergingsruimte
+  hasLift?: boolean;
+  aptType?: AptType;
   woz?: { '2023': number; '2024': number; '2025': number };
   huispedia?: { p40: number; p60: number; p80: number };
   popularity: {
@@ -43,6 +50,7 @@ export const HOMES: Home[] = [
     id: 'gravenstraat-93',
     address: 'Gravenstraat 93',
     city: 'Alphen aan den Rijn',
+    neighborhood: 'Gouwsluis',
     fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-gravenstraat-93/80814978/',
     askPrice: 365_000,
     m2: 69,
@@ -51,6 +59,10 @@ export const HOMES: Home[] = [
     vveMonthly: 160,
     ownParking: false,
     outdoorSpace: 'balkon-oost',
+    bedrooms: 2,
+    storageM2: 6,
+    hasLift: false,
+    aptType: 'portiekflat',
     woz: { '2023': 270_000, '2024': 275_000, '2025': 316_000 },
     huispedia: { p40: 388_000, p60: 399_000, p80: 412_000 },
     popularity: {
@@ -77,6 +89,7 @@ export const HOMES: Home[] = [
     id: 'azielaan-57',
     address: 'Aziëlaan 57',
     city: 'Alphen aan den Rijn',
+    neighborhood: 'Kerk en Zanen',
     fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-azielaan-57/43332025/',
     askPrice: 440_000,
     m2: 87,
@@ -85,6 +98,10 @@ export const HOMES: Home[] = [
     vveMonthly: 216,                 // €176 appartement + €40,30 parkeerplaats
     ownParking: true,
     outdoorSpace: 'ZW-balkon (9m²)',
+    bedrooms: 2,
+    storageM2: 16,
+    hasLift: true,
+    aptType: 'galerijflat',
     woz: { '2023': 347_000, '2024': 369_000, '2025': 449_000 },
     huispedia: { p40: 464_000, p60: 478_000, p80: 494_000 },
     popularity: {
@@ -113,6 +130,7 @@ export const HOMES: Home[] = [
     id: 'abel-tasmanstraat-128',
     address: 'Abel Tasmanstraat 128',
     city: 'Alphen aan den Rijn',
+    neighborhood: 'Bedrijventerrein Rijnhaven-Oost',
     fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-abel-tasmanstraat-128/80813340/',
     askPrice: 479_000,
     m2: 85,
@@ -122,6 +140,10 @@ export const HOMES: Home[] = [
     monthlyExtras: { gas: 134 },     // stookkosten inbegrepen via VvE-totaal €340
     ownParking: true,
     outdoorSpace: 'balkon-west',
+    bedrooms: 2,
+    storageM2: 6,
+    hasLift: true,
+    aptType: 'corridorflat',
     woz: { '2023': 368_000, '2024': 401_000, '2025': 459_000 },
     huispedia: { p40: 502_000, p60: 517_000, p80: 534_000 },
     popularity: {
@@ -148,6 +170,7 @@ export const HOMES: Home[] = [
     id: 'sacharovlaan-41',
     address: 'Dr. A.D. Sacharovlaan 41',
     city: 'Alphen aan den Rijn',
+    neighborhood: 'Paradijslaan',
     fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-dr-a-d-sacharovlaan-41/',
     askPrice: 400_000,
     m2: 84,
@@ -157,6 +180,10 @@ export const HOMES: Home[] = [
     monthlyExtras: { gas: 60 },      // "gas/elektra slechts €60/mnd"
     ownParking: false,
     outdoorSpace: 'zonnig balkon',
+    bedrooms: 2,
+    storageM2: 5,
+    hasLift: true,
+    aptType: 'portiekflat',
     woz: { '2023': 308_000, '2024': 314_000, '2025': 340_000 },
     huispedia: undefined,        // niet op Huispedia te vinden
     popularity: {

@@ -44,13 +44,25 @@ export default function App() {
     kostenKoperPct: DEFAULTS.kostenKoperPct,
     ownMoneyBudgetK: DEFAULTS.ownMoneyBudgetK,
     exitHorizonYears: DEFAULTS.exitHorizonYears,
-    growthPctPerYear: DEFAULTS.growthPctPerYear,
-    taxatieShortfallPct: DEFAULTS.taxatieShortfallPct
+    growthPctPerYear: DEFAULTS.growthPctPerYear
   });
 
-  // Initial bid = asking price for each home
-  const [bids, setBids] = useState<Record<string, number>>(() =>
-    Object.fromEntries(HOMES.map((h) => [h.id, h.askPrice]))
+  // Initial bids: hot homes on huispedia p80, cool homes on vraagprijs
+  const [bids, setBids] = useState<Record<string, number>>(() => {
+    const m: Record<string, number> = {};
+    for (const h of HOMES) {
+      if (h.id === 'gravenstraat-93' && h.huispedia)
+        m[h.id] = h.huispedia.p80;
+      else if (h.id === 'abel-tasmanstraat-128' && h.huispedia)
+        m[h.id] = h.huispedia.p80;
+      else m[h.id] = h.askPrice;
+    }
+    return m;
+  });
+
+  // Per-home taxatie shortfall %. 0 = taxatie equals bid (best case).
+  const [taxaties, setTaxaties] = useState<Record<string, number>>(() =>
+    Object.fromEntries(HOMES.map((h) => [h.id, 0]))
   );
 
   const derived = useMemo(() => HOMES.map((h) => derive(h)), []);
@@ -119,6 +131,10 @@ export default function App() {
               derived={derived}
               bids={bids}
               onBidChange={(id, v) => setBids((b) => ({ ...b, [id]: v }))}
+              taxaties={taxaties}
+              onTaxatieChange={(id, v) =>
+                setTaxaties((t) => ({ ...t, [id]: v }))
+              }
               controls={controls}
             />
           </Tabs.Content>
@@ -129,6 +145,7 @@ export default function App() {
               homes={HOMES}
               derived={derived}
               bids={bids}
+              taxaties={taxaties}
               controls={controls}
             />
           </Tabs.Content>
@@ -142,6 +159,10 @@ export default function App() {
                 derived={derived[i]}
                 bid={bids[h.id]}
                 onBidChange={updateBid(h.id)}
+                taxatieShortfallPct={taxaties[h.id]}
+                onTaxatieChange={(v) =>
+                  setTaxaties((t) => ({ ...t, [h.id]: v }))
+                }
                 controls={controls}
               />
             ))}
@@ -158,7 +179,12 @@ export default function App() {
 
           {/* PROJECTION */}
           <Tabs.Content value="projection" className="focus:outline-none">
-            <ProjectionChart homes={HOMES} bids={bids} controls={controls} />
+            <ProjectionChart
+              homes={HOMES}
+              bids={bids}
+              taxaties={taxaties}
+              controls={controls}
+            />
           </Tabs.Content>
 
           {/* POPULARITY */}

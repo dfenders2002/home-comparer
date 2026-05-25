@@ -16,12 +16,13 @@ import { netAtExit, fmtEURk } from '../lib/finance';
 interface Props {
   homes: Home[];
   bids: Record<string, number>;
+  taxaties: Record<string, number>;
   controls: GlobalControls;
 }
 
 const COLORS = ['#6ee7b7', '#fbbf24', '#60a5fa', '#f472b6', '#a78bfa'];
 
-export function ProjectionChart({ homes, bids, controls }: Props) {
+export function ProjectionChart({ homes, bids, taxaties, controls }: Props) {
   const maxYears = Math.max(controls.exitHorizonYears, 12);
 
   // Build per-year rows: { year, [homeId]: netAtExit }
@@ -38,7 +39,7 @@ export function ProjectionChart({ homes, bids, controls }: Props) {
         controls.growthPctPerYear,
         y,
         2,
-        controls.taxatieShortfallPct
+        taxaties[h.id] ?? 0
       );
     }
     rows.push(row);
@@ -116,7 +117,7 @@ export function ProjectionChart({ homes, bids, controls }: Props) {
             controls.growthPctPerYear,
             controls.exitHorizonYears,
             2,
-            controls.taxatieShortfallPct
+            taxaties[h.id] ?? 0
           );
           return (
             <div
