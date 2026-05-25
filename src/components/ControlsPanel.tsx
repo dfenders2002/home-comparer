@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Slider } from './ui/Slider';
 import { Card } from './ui/Card';
+import { ChevronDown, ChevronUp, SlidersHorizontal } from 'lucide-react';
 
 export interface GlobalControls {
   ratePct: number;
@@ -16,12 +18,49 @@ interface Props {
 }
 
 export function ControlsPanel({ values, onChange }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Card
-      title="Globale aannames"
-      subtitle="Sleep om alle berekeningen live aan te passen"
-    >
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 lg:grid-cols-6">
+    <Card>
+      {/* Mobile collapsed header */}
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between gap-2 text-left sm:hidden"
+        aria-expanded={open}
+      >
+        <div className="flex min-w-0 items-center gap-2 text-xs text-text">
+          <SlidersHorizontal size={13} className="flex-shrink-0 text-muted" />
+          <span className="font-medium">Globale aannames</span>
+          <span className="truncate text-muted">
+            · {values.ratePct.toFixed(2)}% · €{values.ownMoneyBudgetK}K
+          </span>
+        </div>
+        {open ? (
+          <ChevronUp size={14} className="flex-shrink-0 text-muted" />
+        ) : (
+          <ChevronDown size={14} className="flex-shrink-0 text-muted" />
+        )}
+      </button>
+
+      {/* Desktop header */}
+      <div className="hidden items-center justify-between sm:flex">
+        <div>
+          <div className="text-sm font-semibold text-text">
+            Globale aannames
+          </div>
+          <div className="mt-0.5 text-xs text-muted">
+            Sleep om alle berekeningen live aan te passen
+          </div>
+        </div>
+      </div>
+
+      {/* Sliders — always visible on sm+, collapsible on mobile */}
+      <div
+        className={`mt-3 grid-cols-1 gap-5 sm:!grid sm:grid-cols-3 lg:grid-cols-6 ${
+          open ? 'grid' : 'hidden'
+        }`}
+      >
         <Slider
           label="Hypotheekrente"
           value={values.ratePct}

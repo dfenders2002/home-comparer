@@ -171,7 +171,7 @@ export const HOMES: Home[] = [
     address: 'Dr. A.D. Sacharovlaan 41',
     city: 'Alphen aan den Rijn',
     neighborhood: 'Paradijslaan',
-    fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-dr-a-d-sacharovlaan-41/',
+    fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-dr-ad-sacharovlaan-41/89784186/',
     askPrice: 400_000,
     m2: 84,
     bouwjaar: 1994,

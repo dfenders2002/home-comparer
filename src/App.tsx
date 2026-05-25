@@ -25,6 +25,7 @@ import { RadarOverlay } from './components/RadarOverlay';
 import { ProsConsCards } from './components/ProsConsCards';
 import { HeatIndicator } from './components/HeatIndicator';
 import { Summary } from './components/Summary';
+import { HomeToggles } from './components/HomeToggles';
 
 const TABS = [
   { id: 'summary',    label: 'Samenvatting', icon: LayoutDashboard },
@@ -65,7 +66,23 @@ export default function App() {
     Object.fromEntries(HOMES.map((h) => [h.id, 0]))
   );
 
-  const derived = useMemo(() => HOMES.map((h) => derive(h)), []);
+  // Enabled homes (toggle on/off in comparison)
+  const [enabledIds, setEnabledIds] = useState<Set<string>>(
+    () => new Set(HOMES.map((h) => h.id))
+  );
+
+  const visibleHomes = useMemo(
+    () => HOMES.filter((h) => enabledIds.has(h.id)),
+    [enabledIds]
+  );
+
+  const visibleDerived = useMemo(
+    () => visibleHomes.map((h) => derive(h)),
+    [visibleHomes]
+  );
+
+  // Keep `derived` for callsites that still use full HOMES (none after this pass)
+  const derived = visibleDerived;
 
   const updateControls = (patch: Partial<GlobalControls>) =>
     setControls((c) => ({ ...c, ...patch }));
@@ -105,6 +122,21 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-[1400px] space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
+        <HomeToggles
+          homes={HOMES}
+          enabled={enabledIds}
+          onToggle={(id) =>
+            setEnabledIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) next.delete(id);
+              else next.add(id);
+              return next;
+            })
+          }
+          onAll={(state) =>
+            setEnabledIds(state ? new Set(HOMES.map((h) => h.id)) : new Set())
+          }
+        />
         <ControlsPanel values={controls} onChange={updateControls} />
 
         <Tabs.Root defaultValue="summary" className="space-y-4">
@@ -127,7 +159,7 @@ export default function App() {
           {/* SUMMARY (default) */}
           <Tabs.Content value="summary" className="focus:outline-none">
             <Summary
-              homes={HOMES}
+              homes={visibleHomes}
               derived={derived}
               bids={bids}
               onBidChange={(id, v) => setBids((b) => ({ ...b, [id]: v }))}
@@ -142,7 +174,7 @@ export default function App() {
           {/* TABLE */}
           <Tabs.Content value="table" className="focus:outline-none">
             <ComparisonTable
-              homes={HOMES}
+              homes={visibleHomes}
               derived={derived}
               bids={bids}
               taxaties={taxaties}
@@ -152,7 +184,7 @@ export default function App() {
 
           {/* BIDS */}
           <Tabs.Content value="bids" className="space-y-4 focus:outline-none">
-            {HOMES.map((h, i) => (
+            {visibleHomes.map((h, i) => (
               <BidSimulator
                 key={h.id}
                 home={h}
@@ -171,7 +203,7 @@ export default function App() {
           {/* VALUE */}
           <Tabs.Content value="value" className="space-y-4 focus:outline-none">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-              {HOMES.map((h) => (
+              {visibleHomes.map((h) => (
                 <ValueRangeChart key={h.id} home={h} bid={bids[h.id]} />
               ))}
             </div>
@@ -180,7 +212,7 @@ export default function App() {
           {/* PROJECTION */}
           <Tabs.Content value="projection" className="focus:outline-none">
             <ProjectionChart
-              homes={HOMES}
+              homes={visibleHomes}
               bids={bids}
               taxaties={taxaties}
               controls={controls}
@@ -189,25 +221,21 @@ export default function App() {
 
           {/* POPULARITY */}
           <Tabs.Content value="popularity" className="space-y-4 focus:outline-none">
-            <HeatIndicator homes={HOMES} derived={derived} />
-            <PopularityScatter homes={HOMES} derived={derived} />
+            <HeatIndicator homes={visibleHomes} derived={derived} />
+            <PopularityScatter homes={visibleHomes} derived={derived} />
           </Tabs.Content>
 
           {/* RADAR */}
           <Tabs.Content value="radar" className="focus:outline-none">
-            <RadarOverlay homes={HOMES} derived={derived} />
+            <RadarOverlay homes={visibleHomes} derived={derived} />
           </Tabs.Content>
 
           {/* PROS / CONS */}
           <Tabs.Content value="proscons" className="focus:outline-none">
-            <ProsConsCards homes={HOMES} />
+            <ProsConsCards homes={visibleHomes} />
           </Tabs.Content>
         </Tabs.Root>
 
-        <footer className="pt-4 text-center text-[11px] text-muted">
-          Data in <span className="font-mono">src/data/homes.ts</span> — paste
-          nieuwe woning-info in chat en Claude voegt 'm toe.
-        </footer>
       </main>
     </div>
   );
