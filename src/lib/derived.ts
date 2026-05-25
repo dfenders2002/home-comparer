@@ -253,11 +253,10 @@ export function signatureTags(
     (v) => `+${v.toFixed(1)}% '23→'25`
   );
 
-  // Renovation — 0 = good (instapklaar), highest = bad
+  // Renovation — 0 = good (instapklaar), anything > 0 = bad with its own amount
   const renovVals = homes.map((h) => h.renovationEstimate ?? 0);
   const renovMax = Math.max(...renovVals);
   if (renovMax > 0) {
-    // Every home at 0 gets an 'Instapklaar' tag
     homes.forEach((h, i) => {
       if (renovVals[i] === 0) {
         result[h.id].push({
@@ -265,14 +264,13 @@ export function signatureTags(
           detail: 'geen renovatie nodig',
           tone: 'good'
         });
+      } else {
+        result[h.id].push({
+          label: 'Renovatie',
+          detail: `~€${Math.round(renovVals[i] / 1000)}K`,
+          tone: 'bad'
+        });
       }
-    });
-    // The worst gets the bad tag
-    const worstIdx = renovVals.indexOf(renovMax);
-    result[homes[worstIdx].id].push({
-      label: 'Veel renovatie',
-      detail: `~€${Math.round(renovMax / 1000)}K`,
-      tone: 'bad'
     });
   }
 
