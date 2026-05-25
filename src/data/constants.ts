@@ -25,8 +25,9 @@ export const LABEL_RANK: Record<EnergyLabel, number> = {
 export const DEFAULTS = {
   ratePct: 3.9,
   termYears: 30,
-  kostenKoperPct: 2.5,   // makelaar/notaris/taxatie/advies/NHG ~ 2-3% of price (no overdrachtsbelasting)
-  ownMoneyBudgetK: 87.5, // €85-90K midpoint
+  kostenKoperPct: 2.5,        // makelaar/notaris/taxatie/advies/NHG ~ 2-3% of price (no overdrachtsbelasting)
+  ownMoneyBudgetK: 87.5,      // €85-90K midpoint
   exitHorizonYears: 8,
-  growthPctPerYear: 7.5
+  growthPctPerYear: 7.5,
+  taxatieShortfallPct: 0      // 0% = taxatie matches bid. Drag up to stress-test.
 };

@@ -7,7 +7,8 @@ import {
   GitFork as ScatterIcon,
   Radar,
   Table2,
-  ListChecks
+  ListChecks,
+  LayoutDashboard
 } from 'lucide-react';
 
 import { HOMES } from './data/homes';
@@ -22,18 +23,18 @@ import { ProjectionChart } from './components/ProjectionChart';
 import { PopularityScatter } from './components/PopularityScatter';
 import { RadarOverlay } from './components/RadarOverlay';
 import { ProsConsCards } from './components/ProsConsCards';
-import { BidStrip } from './components/BidStrip';
 import { HeatIndicator } from './components/HeatIndicator';
+import { Summary } from './components/Summary';
 
 const TABS = [
-  { id: 'overview',   label: 'Overzicht',   icon: HomeIcon },
-  { id: 'table',      label: 'Tabel',       icon: Table2 },
-  { id: 'bids',       label: 'Bod & geld',  icon: Sliders },
-  { id: 'value',      label: 'Waardering',  icon: TrendingUp },
-  { id: 'projection', label: '8-jaars',     icon: TrendingUp },
-  { id: 'popularity', label: 'Markt-heat',  icon: ScatterIcon },
-  { id: 'radar',      label: 'Radar',       icon: Radar },
-  { id: 'proscons',   label: 'Pro / Con',   icon: ListChecks }
+  { id: 'summary',    label: 'Samenvatting', icon: LayoutDashboard },
+  { id: 'bids',       label: 'Bod & geld',   icon: Sliders },
+  { id: 'value',      label: 'Waardering',   icon: TrendingUp },
+  { id: 'projection', label: '8-jaars',      icon: TrendingUp },
+  { id: 'popularity', label: 'Markt-heat',   icon: ScatterIcon },
+  { id: 'radar',      label: 'Radar',        icon: Radar },
+  { id: 'table',      label: 'Detail-tabel', icon: Table2 },
+  { id: 'proscons',   label: 'Pro / Con',    icon: ListChecks }
 ];
 
 export default function App() {
@@ -43,7 +44,8 @@ export default function App() {
     kostenKoperPct: DEFAULTS.kostenKoperPct,
     ownMoneyBudgetK: DEFAULTS.ownMoneyBudgetK,
     exitHorizonYears: DEFAULTS.exitHorizonYears,
-    growthPctPerYear: DEFAULTS.growthPctPerYear
+    growthPctPerYear: DEFAULTS.growthPctPerYear,
+    taxatieShortfallPct: DEFAULTS.taxatieShortfallPct
   });
 
   // Initial bid = asking price for each home
@@ -93,7 +95,7 @@ export default function App() {
       <main className="mx-auto max-w-[1400px] space-y-5 px-6 py-6">
         <ControlsPanel values={controls} onChange={updateControls} />
 
-        <Tabs.Root defaultValue="overview" className="space-y-4">
+        <Tabs.Root defaultValue="summary" className="space-y-4">
           <Tabs.List className="flex flex-wrap gap-1 rounded-xl border border-border bg-panel p-1">
             {TABS.map((t) => {
               const Icon = t.icon;
@@ -110,23 +112,15 @@ export default function App() {
             })}
           </Tabs.List>
 
-          {/* OVERVIEW */}
-          <Tabs.Content value="overview" className="space-y-4 focus:outline-none">
-            <BidStrip
+          {/* SUMMARY (default) */}
+          <Tabs.Content value="summary" className="focus:outline-none">
+            <Summary
               homes={HOMES}
               derived={derived}
               bids={bids}
               onBidChange={(id, v) => setBids((b) => ({ ...b, [id]: v }))}
               controls={controls}
             />
-            <HeatIndicator homes={HOMES} derived={derived} />
-            <ComparisonTable
-              homes={HOMES}
-              derived={derived}
-              bids={bids}
-              controls={controls}
-            />
-            <ProsConsCards homes={HOMES} />
           </Tabs.Content>
 
           {/* TABLE */}

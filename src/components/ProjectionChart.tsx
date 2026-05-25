@@ -36,7 +36,9 @@ export function ProjectionChart({ homes, bids, controls }: Props) {
         controls.ratePct,
         controls.termYears,
         controls.growthPctPerYear,
-        y
+        y,
+        2,
+        controls.taxatieShortfallPct
       );
     }
     rows.push(row);
@@ -112,7 +114,9 @@ export function ProjectionChart({ homes, bids, controls }: Props) {
             controls.ratePct,
             controls.termYears,
             controls.growthPctPerYear,
-            controls.exitHorizonYears
+            controls.exitHorizonYears,
+            2,
+            controls.taxatieShortfallPct
           );
           return (
             <div

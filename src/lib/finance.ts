@@ -11,22 +11,43 @@ export function kostenKoper(bid: number, kostenKoperPct: number): number {
 
 /**
  * Eigen geld nodig:
- *   = max(0, bid − mortgageCap)  ← gap above the bank's max
+ *   = bid − min(bid, mortgageCap, taxatieValue)   ← combined cap/taxatie gap
  *   + kosten koper (notaris, taxatie, advies, NHG, etc.)
+ *
+ * taxatieShortfallPct = % under bid the taxatie comes in (0 = best case, taxatie = bid).
  */
 export function eigenGeldNeeded(
   bid: number,
   label: EnergyLabel,
-  kostenKoperPct: number
-): { gap: number; kk: number; total: number } {
+  kostenKoperPct: number,
+  taxatieShortfallPct: number = 0
+): {
+  gap: number;
+  capGap: number;
+  taxatieGap: number;
+  kk: number;
+  total: number;
+  mortgage: number;
+} {
   const cap = mortgageCap(label);
-  const gap = Math.max(0, bid - cap);
+  const taxatie = bid * (1 - taxatieShortfallPct / 100);
+  const mortgage = Math.min(bid, cap, taxatie);
+  const gap = bid - mortgage;
+  const capGap = Math.max(0, bid - cap);
+  // taxatie shortfall only matters if taxatie ends up below the cap-bound mortgage
+  const capBound = Math.min(bid, cap);
+  const taxatieGap = Math.max(0, capBound - taxatie);
   const kk = kostenKoper(bid, kostenKoperPct);
-  return { gap, kk, total: gap + kk };
+  return { gap, capGap, taxatieGap, kk, total: gap + kk, mortgage };
 }
 
-export function mortgagePrincipal(bid: number, label: EnergyLabel): number {
-  return Math.min(bid, mortgageCap(label));
+export function mortgagePrincipal(
+  bid: number,
+  label: EnergyLabel,
+  taxatieShortfallPct: number = 0
+): number {
+  const taxatie = bid * (1 - taxatieShortfallPct / 100);
+  return Math.min(bid, mortgageCap(label), taxatie);
 }
 
 /** Annuity payment (Dutch annuïtair) — monthly */
@@ -75,9 +96,10 @@ export function netAtExit(
   termYears: number,
   growthPctPerYear: number,
   years: number,
-  exitCostPct: number = 2
+  exitCostPct: number = 2,
+  taxatieShortfallPct: number = 0
 ): number {
-  const principal = mortgagePrincipal(bid, label);
+  const principal = mortgagePrincipal(bid, label, taxatieShortfallPct);
   const remaining = remainingPrincipal(principal, ratePct, termYears, years * 12);
   const sale = projectedSalePrice(bid, growthPctPerYear, years);
   const exitCost = sale * (exitCostPct / 100);
@@ -89,9 +111,10 @@ export function totalMonthly(
   home: Home,
   bid: number,
   ratePct: number,
-  termYears: number
+  termYears: number,
+  taxatieShortfallPct: number = 0
 ): { mortgage: number; vve: number; utilities: number; total: number } {
-  const principal = mortgagePrincipal(bid, home.energyLabel);
+  const principal = mortgagePrincipal(bid, home.energyLabel, taxatieShortfallPct);
   const mortgage = monthlyMortgage(principal, ratePct, termYears);
   const vve = home.vveMonthly;
   const e = home.monthlyExtras ?? {};

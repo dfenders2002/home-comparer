@@ -157,9 +157,8 @@ export const HOMES: Home[] = [
     monthlyExtras: { gas: 60 },      // "gas/elektra slechts €60/mnd"
     ownParking: false,
     outdoorSpace: 'zonnig balkon',
-    // WOZ + huispedia nog niet aangeleverd — vul aan zodra beschikbaar
-    woz: undefined,
-    huispedia: undefined,
+    woz: { '2023': 308_000, '2024': 314_000, '2025': 340_000 },
+    huispedia: undefined,        // niet op Huispedia te vinden
     popularity: {
       viewsTotal: 3248,
       saves: 25,

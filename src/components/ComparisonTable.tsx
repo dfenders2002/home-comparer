@@ -122,11 +122,11 @@ const ROWS: RowDef[] = [
     label: 'Eigen geld nodig',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      return eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
     },
     higherBetter: false,
     fmt: (v) => fmtEUR(v)
@@ -135,11 +135,11 @@ const ROWS: RowDef[] = [
     label: 'Maandlast totaal',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears).total;
+      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.controls.taxatieShortfallPct).total;
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears).total;
+      return totalMonthly(h, bid, ctx.controls.ratePct, ctx.controls.termYears, ctx.controls.taxatieShortfallPct).total;
     },
     higherBetter: false,
     fmt: (v) => `€${Math.round(v).toLocaleString('nl-NL')}`
@@ -155,12 +155,12 @@ const ROWS: RowDef[] = [
     label: 'Cash totaal (eg + renov)',
     pick: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
       return eg + (h.renovationEstimate ?? 0);
     },
     numeric: (h, _d, ctx) => {
       const bid = ctx.bids[h.id] ?? h.askPrice;
-      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct).total;
+      const eg = eigenGeldNeeded(bid, h.energyLabel, ctx.controls.kostenKoperPct, ctx.controls.taxatieShortfallPct).total;
       return eg + (h.renovationEstimate ?? 0);
     },
     higherBetter: false,

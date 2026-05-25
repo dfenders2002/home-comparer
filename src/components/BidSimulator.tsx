@@ -22,8 +22,19 @@ interface Props {
 export function BidSimulator({ home, derived, bid, onBidChange, controls }: Props) {
   const pct = (bid / home.askPrice) * 100;
   const cap = mortgageCap(home.energyLabel);
-  const eg = eigenGeldNeeded(bid, home.energyLabel, controls.kostenKoperPct);
-  const monthly = totalMonthly(home, bid, controls.ratePct, controls.termYears);
+  const eg = eigenGeldNeeded(
+    bid,
+    home.energyLabel,
+    controls.kostenKoperPct,
+    controls.taxatieShortfallPct
+  );
+  const monthly = totalMonthly(
+    home,
+    bid,
+    controls.ratePct,
+    controls.termYears,
+    controls.taxatieShortfallPct
+  );
   const renov = home.renovationEstimate ?? 0;
   const cashOut = eg.total + renov;
   const budget = controls.ownMoneyBudgetK * 1000;
@@ -118,9 +129,19 @@ export function BidSimulator({ home, derived, bid, onBidChange, controls }: Prop
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Stat
             label="Hypotheek"
-            value={fmtEUR(Math.min(bid, cap))}
-            sub={bid > cap ? `gap: ${fmtEUR(bid - cap)}` : 'past in cap'}
-            subColor={bid > cap ? 'text-warn' : 'text-good'}
+            value={fmtEUR(eg.mortgage)}
+            sub={
+              eg.capGap > 0 && eg.taxatieGap > 0
+                ? `cap −€${Math.round(eg.capGap / 1000)}K + tax −€${Math.round(
+                    eg.taxatieGap / 1000
+                  )}K`
+                : eg.capGap > 0
+                ? `boven cap (−${fmtEUR(eg.capGap)})`
+                : eg.taxatieGap > 0
+                ? `taxatie te laag (−${fmtEUR(eg.taxatieGap)})`
+                : 'past in cap + taxatie'
+            }
+            subColor={eg.gap > 0 ? 'text-warn' : 'text-good'}
           />
           <Stat
             label="Eigen geld nodig"
