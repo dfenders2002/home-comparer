@@ -160,7 +160,7 @@ export function BidSimulator({
           hint="Hoe ver taxatie onder bod uitkomt → drijft eigen-geld omhoog"
         />
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
           <Stat
             label="Hypotheek"
             value={fmtEUR(eg.mortgage)}
@@ -196,7 +196,7 @@ export function BidSimulator({
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-3">
           <Stat
             label="Budget headroom"
             value={`${fits ? '' : '−'}${fmtEUR(Math.abs(headroom))}`}

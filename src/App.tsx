@@ -77,17 +77,17 @@ export default function App() {
     <div className="min-h-screen bg-bg">
       {/* Header */}
       <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-accent text-bg">
-              <HomeIcon size={18} />
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+            <div className="grid h-8 w-8 flex-shrink-0 place-items-center rounded-lg bg-accent text-bg sm:h-9 sm:w-9">
+              <HomeIcon size={16} />
             </div>
-            <div>
-              <div className="text-base font-semibold text-text">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-text sm:text-base">
                 Home Comparer
               </div>
-              <div className="text-xs text-muted">
-                Alphen aan den Rijn · {HOMES.length} appartementen
+              <div className="truncate text-[11px] text-muted sm:text-xs">
+                Alphen a/d Rijn · {HOMES.length} appartementen
               </div>
             </div>
           </div>
@@ -104,18 +104,18 @@ export default function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-[1400px] space-y-5 px-6 py-6">
+      <main className="mx-auto max-w-[1400px] space-y-4 px-3 py-4 sm:space-y-5 sm:px-6 sm:py-6">
         <ControlsPanel values={controls} onChange={updateControls} />
 
         <Tabs.Root defaultValue="summary" className="space-y-4">
-          <Tabs.List className="flex flex-wrap gap-1 rounded-xl border border-border bg-panel p-1">
+          <Tabs.List className="-mx-3 flex gap-1 overflow-x-auto rounded-none border-y border-border bg-panel px-3 py-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:rounded-xl sm:border">
             {TABS.map((t) => {
               const Icon = t.icon;
               return (
                 <Tabs.Trigger
                   key={t.id}
                   value={t.id}
-                  className="group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text data-[state=active]:bg-panel2 data-[state=active]:text-text"
+                  className="group flex flex-shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:text-text data-[state=active]:bg-panel2 data-[state=active]:text-text sm:px-3"
                 >
                   <Icon size={13} className="opacity-70 group-data-[state=active]:opacity-100" />
                   {t.label}

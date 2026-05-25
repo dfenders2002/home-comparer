@@ -132,13 +132,13 @@ export function Summary({
     <div className="space-y-4">
       {/* Best-pick callout — bold */}
       {bestPick && (
-        <div className="rounded-xl border-2 border-accent/60 bg-gradient-to-br from-accent/15 via-accent/5 to-transparent p-4 shadow-[0_0_40px_-12px_rgba(110,231,183,0.4)]">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="grid h-11 w-11 place-items-center rounded-xl bg-accent text-bg shadow-lg">
-                <Crown size={20} />
+        <div className="rounded-xl border-2 border-accent/60 bg-gradient-to-br from-accent/15 via-accent/5 to-transparent p-3 shadow-[0_0_40px_-12px_rgba(110,231,183,0.4)] sm:p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-xl bg-accent text-bg shadow-lg sm:h-11 sm:w-11">
+                <Crown size={18} />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="text-[10px] font-semibold uppercase tracking-widest text-accent">
                   Beste keuze nu
                 </div>
@@ -146,17 +146,17 @@ export function Summary({
                   href={bestPick.home.fundaUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-xl font-bold text-text hover:text-accent"
+                  className="block truncate text-lg font-bold text-text hover:text-accent sm:text-xl"
                 >
                   {bestPick.home.address}
                 </a>
-                <div className="text-xs text-muted">
-                  {fitsCount}/{rows.length} appartementen passen in budget · score
-                  o.b.v. headroom, waarde-marge, m², heat & label
+                <div className="truncate text-[11px] text-muted sm:text-xs">
+                  {fitsCount}/{rows.length} passen in budget · score o.b.v.
+                  headroom, waarde, m², heat & label
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-6">
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 sm:gap-x-6">
               <KPI label="bod" value={fmtEURk(bestPick.bid)} />
               <KPI label="cash" value={fmtEURk(bestPick.cashOut)} />
               <KPI
@@ -246,7 +246,7 @@ function HeroCard({
 
   return (
     <div
-      className={`relative rounded-xl border bg-panel p-4 transition-shadow ${
+      className={`relative rounded-xl border bg-panel p-3 transition-shadow sm:p-4 ${
         isBestPick
           ? 'border-accent/60 shadow-[0_0_24px_-8px_rgba(110,231,183,0.35)]'
           : 'border-border'
@@ -307,7 +307,7 @@ function HeroCard({
       )}
 
       {/* Key facts grid — the most-important objective info, prominent */}
-      <div className="mb-4 grid grid-cols-4 gap-1.5 rounded-lg border border-border bg-bg/30 p-2">
+      <div className="mb-4 grid grid-cols-3 gap-1.5 rounded-lg border border-border bg-bg/30 p-2 sm:grid-cols-4">
         <Fact icon={<Ruler size={11} />} label="m²" value={`${home.m2}`} />
         <Fact
           icon={<Ruler size={11} />}
@@ -417,7 +417,7 @@ function HeroCard({
       </div>
 
       {/* 5 financial KPI tiles */}
-      <div className="grid grid-cols-5 gap-1.5">
+      <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:grid-cols-5">
         <Tile
           label="Cash totaal"
           value={fmtEURk(cashOut)}

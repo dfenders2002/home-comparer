@@ -106,7 +106,7 @@ export function ProjectionChart({ homes, bids, taxaties, controls }: Props) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-2 md:grid-cols-3">
+      <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
         {homes.map((h, i) => {
           const bid = bids[h.id] ?? h.askPrice;
           const net = netAtExit(
