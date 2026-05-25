@@ -291,18 +291,32 @@ function HeroCard({
         </div>
       </div>
 
-      {/* Signature tags */}
+      {/* Signature tags — good / bad highlights */}
       {tags.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
-          {tags.map((t, i) => (
-            <span
-              key={i}
-              className="rounded-md border border-accent/30 bg-accent/10 px-2 py-0.5 text-[10px] font-medium text-accent"
-              title={t.detail}
-            >
-              {t.label} · {t.detail}
-            </span>
-          ))}
+          {tags
+            .slice()
+            .sort((a, b) => {
+              const order = { good: 0, neutral: 1, bad: 2 } as const;
+              return order[a.tone] - order[b.tone];
+            })
+            .map((t, i) => {
+              const cls =
+                t.tone === 'good'
+                  ? 'border-accent/30 bg-accent/10 text-accent'
+                  : t.tone === 'bad'
+                  ? 'border-bad/30 bg-bad/10 text-bad'
+                  : 'border-border bg-panel2/60 text-muted';
+              return (
+                <span
+                  key={i}
+                  className={`rounded-md border px-2 py-0.5 text-[10px] font-medium ${cls}`}
+                  title={t.detail}
+                >
+                  {t.label} · {t.detail}
+                </span>
+              );
+            })}
         </div>
       )}
 

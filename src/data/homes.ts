@@ -192,7 +192,7 @@ export const HOMES: Home[] = [
       daysOnFunda: 32,
       listedOn: '2026-04-23'
     },
-    renovationEstimate: 18_000,      // vloer + keuken + muren verven
+    renovationEstimate: 30_000,      // vloer + keuken + muren + badkamer
     pros: [
       'Goedkoopst per m² (€4.762)',
       '84m² ruime indeling',
@@ -204,7 +204,8 @@ export const HOMES: Home[] = [
     cons: [
       'Hoogste VvE (€268)',
       'Geen eigen parkeerplek',
-      'Renovatie nodig: vloer, keuken, muren (~€18K)',
+      'Veel renovatie nodig: vloer, keuken, muren, badkamer (~€30K)',
+      'Badkamer met ligbad is gedateerd',
       'Bouwjaar 1994 (op één na oudste)'
     ]
   }

@@ -73,14 +73,17 @@ export const HEAT_LABEL: Record<HeatLevel, string> = {
   'on-fire': 'Vuur'
 };
 
+export type TagTone = 'good' | 'bad' | 'neutral';
+
 export interface SignatureTag {
   label: string;
   detail: string;
+  tone: TagTone;
 }
 
 /**
- * Compute the standout positive characteristics of each home relative to the dataset.
- * One home can win multiple dimensions; if a dimension has no clear winner we skip it.
+ * Compute standout positives AND negatives per home relative to the dataset.
+ * Each dimension may award a 'good' tag to the leader and a 'bad' tag to the worst.
  */
 export function signatureTags(
   homes: Home[],
@@ -90,18 +93,8 @@ export function signatureTags(
     homes.map((h) => [h.id, []])
   );
 
-  const pushIf = (
-    winnerIdx: number,
-    label: string,
-    detail: string,
-    tie = false
-  ) => {
-    if (winnerIdx < 0 || tie) return;
-    result[homes[winnerIdx].id].push({ label, detail });
-  };
-
-  // Helper: index of max/min with tie detection (returns -1 on tie)
-  const argBest = (vals: number[], higherIsBetter: boolean): number => {
+  // Push to a single winner index (returns -1 on tie -> no tag awarded)
+  const argExtreme = (vals: number[], higherIsBetter: boolean): number => {
     if (vals.length === 0) return -1;
     let best = vals[0];
     let bestIdx = 0;
@@ -119,105 +112,203 @@ export function signatureTags(
     return ties > 0 ? -1 : bestIdx;
   };
 
-  // m² — biggest
-  pushIf(
-    argBest(homes.map((h) => h.m2), true),
-    'Grootst',
-    `${Math.max(...homes.map((h) => h.m2))}m²`
-  );
-
-  // Newest build year
-  pushIf(
-    argBest(homes.map((h) => h.bouwjaar), true),
-    'Nieuwst',
-    `${Math.max(...homes.map((h) => h.bouwjaar))}`
-  );
-
-  // Best energy label
-  const labelRanks = homes.map((h) => LABEL_RANK[h.energyLabel]);
-  const bestLabelIdx = argBest(labelRanks, true);
-  if (bestLabelIdx >= 0) {
-    pushIf(bestLabelIdx, 'Beste label', homes[bestLabelIdx].energyLabel);
-  }
-
-  // Lowest VvE
-  pushIf(
-    argBest(homes.map((h) => h.vveMonthly), false),
-    'Laagste VvE',
-    `€${Math.min(...homes.map((h) => h.vveMonthly))}/mnd`
-  );
-
-  // Cheapest €/m²
-  pushIf(
-    argBest(derived.map((d) => d.pricePerM2), false),
-    'Goedkoopst per m²',
-    `€${Math.round(Math.min(...derived.map((d) => d.pricePerM2)))}`
-  );
-
-  // Lowest absolute price
-  pushIf(
-    argBest(homes.map((h) => h.askPrice), false),
-    'Goedkoopst totaal',
-    `€${Math.round(Math.min(...homes.map((h) => h.askPrice)) / 1000)}K`
-  );
-
-  // Coolest market
-  const vpdVals = derived.map((d) => d.viewsPerDay ?? Infinity);
-  const coldestIdx = argBest(vpdVals, false);
-  if (coldestIdx >= 0 && derived[coldestIdx].viewsPerDay != null) {
-    pushIf(
-      coldestIdx,
-      'Koudste markt',
-      `${Math.round(derived[coldestIdx].viewsPerDay as number)}/d`
-    );
-  }
-
-  // Best value vs Huispedia p60
-  const valueVals = derived.map((d) =>
-    d.valueHeadroomEUR != null ? d.valueHeadroomEUR : -Infinity
-  );
-  const bestValueIdx = argBest(valueVals, true);
-  if (bestValueIdx >= 0 && derived[bestValueIdx].valueHeadroomEUR != null) {
-    pushIf(
-      bestValueIdx,
-      'Beste waarde-marge',
-      `+€${Math.round((derived[bestValueIdx].valueHeadroomEUR as number) / 1000)}K vs p60`
-    );
-  }
-
-  // Largest storage
-  const storageVals = homes.map((h) => h.storageM2 ?? 0);
-  if (Math.max(...storageVals) > Math.min(...storageVals)) {
-    pushIf(
-      argBest(storageVals, true),
-      'Grootste berging',
-      `${Math.max(...storageVals)}m²`
-    );
-  }
-
-  // Lowest renovation needed (only if some homes have renovation needed)
-  const renovVals = homes.map((h) => h.renovationEstimate ?? 0);
-  if (Math.max(...renovVals) > 0) {
-    const noRenovIdx = renovVals.findIndex((v) => v === 0);
-    if (noRenovIdx >= 0) {
-      result[homes[noRenovIdx].id].push({
-        label: 'Kant-en-klaar',
-        detail: 'geen renovatie nodig'
+  // Award both leader (good) and laggard (bad) for a single dimension
+  const award = (
+    vals: number[],
+    higherIsBetter: boolean,
+    goodLabel: string,
+    badLabel: string,
+    formatter: (v: number) => string,
+    opts: { skipBad?: boolean; skipGood?: boolean; minSpread?: number } = {}
+  ) => {
+    const finite = vals.filter((v) => Number.isFinite(v));
+    if (finite.length < 2) return;
+    const max = Math.max(...finite);
+    const min = Math.min(...finite);
+    if (opts.minSpread != null && max - min < opts.minSpread) return;
+    if (max === min) return;
+    const winnerIdx = argExtreme(vals, higherIsBetter);
+    const loserIdx = argExtreme(vals, !higherIsBetter);
+    if (!opts.skipGood && winnerIdx >= 0) {
+      result[homes[winnerIdx].id].push({
+        label: goodLabel,
+        detail: formatter(vals[winnerIdx]),
+        tone: 'good'
       });
     }
+    if (!opts.skipBad && loserIdx >= 0) {
+      result[homes[loserIdx].id].push({
+        label: badLabel,
+        detail: formatter(vals[loserIdx]),
+        tone: 'bad'
+      });
+    }
+  };
+
+  // m² — biggest = good, smallest = bad
+  award(
+    homes.map((h) => h.m2),
+    true,
+    'Grootst',
+    'Kleinst',
+    (v) => `${v}m²`
+  );
+
+  // Bouwjaar — newest = good, oldest = bad
+  award(
+    homes.map((h) => h.bouwjaar),
+    true,
+    'Nieuwst',
+    'Oudst',
+    (v) => `${v}`
+  );
+
+  // Energy label — best rank = good, worst = bad
+  award(
+    homes.map((h) => LABEL_RANK[h.energyLabel]),
+    true,
+    'Beste label',
+    'Slechtste label',
+    (rank) => {
+      const home = homes.find((h) => LABEL_RANK[h.energyLabel] === rank);
+      return home?.energyLabel ?? `${rank}`;
+    }
+  );
+
+  // VvE — lowest = good, highest = bad
+  award(
+    homes.map((h) => h.vveMonthly),
+    false,
+    'Laagste VvE',
+    'Hoogste VvE',
+    (v) => `€${v}/mnd`
+  );
+
+  // €/m² — cheapest = good, priciest = bad
+  award(
+    derived.map((d) => d.pricePerM2),
+    false,
+    'Goedkoopst per m²',
+    'Duurst per m²',
+    (v) => `€${Math.round(v)}`
+  );
+
+  // Absolute price — cheapest = good, priciest = bad
+  award(
+    homes.map((h) => h.askPrice),
+    false,
+    'Goedkoopst totaal',
+    'Duurst totaal',
+    (v) => `€${Math.round(v / 1000)}K`
+  );
+
+  // Market heat (views/day) — coldest = good, hottest = bad
+  const vpdVals = derived.map((d) =>
+    d.viewsPerDay != null ? d.viewsPerDay : NaN
+  );
+  if (vpdVals.every((v) => Number.isFinite(v))) {
+    award(
+      vpdVals,
+      false,
+      'Koudste markt',
+      'Heetste markt',
+      (v) => `${Math.round(v)}/d`
+    );
   }
 
-  // Strongest WOZ growth
-  const wozGrowthVals = derived.map((d) =>
-    d.wozGrowth23to25Pct ?? -Infinity
+  // Value vs Huispedia p60 — biggest margin = good, most overpriced = bad
+  const valueVals = derived.map((d) =>
+    d.valueHeadroomEUR != null ? d.valueHeadroomEUR : NaN
   );
-  const bestWozIdx = argBest(wozGrowthVals, true);
-  if (bestWozIdx >= 0 && derived[bestWozIdx].wozGrowth23to25Pct != null) {
-    pushIf(
-      bestWozIdx,
-      'Sterkste WOZ-groei',
-      `+${(derived[bestWozIdx].wozGrowth23to25Pct as number).toFixed(1)}% (\'23→\'25)`
-    );
+  award(
+    valueVals,
+    true,
+    'Beste waarde-marge',
+    'Boven modelwaarde',
+    (v) =>
+      v >= 0
+        ? `+€${Math.round(v / 1000)}K vs p60`
+        : `−€${Math.round(Math.abs(v) / 1000)}K vs p60`
+  );
+
+  // Storage — biggest = good (skip 'bad' to avoid noisy 1m² differences)
+  award(
+    homes.map((h) => h.storageM2 ?? 0),
+    true,
+    'Grootste berging',
+    'Kleinste berging',
+    (v) => `${v}m²`,
+    { minSpread: 5 }
+  );
+
+  // WOZ growth '23→'25 — biggest = good, weakest = bad
+  const wozGrowthVals = derived.map((d) =>
+    d.wozGrowth23to25Pct != null ? d.wozGrowth23to25Pct : NaN
+  );
+  award(
+    wozGrowthVals,
+    true,
+    'Sterkste WOZ-groei',
+    'Zwakste WOZ-groei',
+    (v) => `+${v.toFixed(1)}% '23→'25`
+  );
+
+  // Renovation — 0 = good (instapklaar), highest = bad
+  const renovVals = homes.map((h) => h.renovationEstimate ?? 0);
+  const renovMax = Math.max(...renovVals);
+  if (renovMax > 0) {
+    // Every home at 0 gets an 'Instapklaar' tag
+    homes.forEach((h, i) => {
+      if (renovVals[i] === 0) {
+        result[h.id].push({
+          label: 'Instapklaar',
+          detail: 'geen renovatie nodig',
+          tone: 'good'
+        });
+      }
+    });
+    // The worst gets the bad tag
+    const worstIdx = renovVals.indexOf(renovMax);
+    result[homes[worstIdx].id].push({
+      label: 'Veel renovatie',
+      detail: `~€${Math.round(renovMax / 1000)}K`,
+      tone: 'bad'
+    });
+  }
+
+  // Binary features — eigen parkeer / lift: only flag absence as bad if some have it
+  const hasParking = homes.some((h) => h.ownParking);
+  const lacksParking = homes.some((h) => !h.ownParking);
+  if (hasParking && lacksParking) {
+    homes.forEach((h) => {
+      if (h.ownParking) {
+        result[h.id].push({
+          label: 'Eigen parkeer',
+          detail: 'inpandig',
+          tone: 'good'
+        });
+      } else {
+        result[h.id].push({
+          label: 'Geen parkeer',
+          detail: 'openbaar',
+          tone: 'bad'
+        });
+      }
+    });
+  }
+
+  const hasLift = homes.some((h) => h.hasLift);
+  const lacksLift = homes.some((h) => h.hasLift === false);
+  if (hasLift && lacksLift) {
+    homes.forEach((h) => {
+      if (h.hasLift === false) {
+        result[h.id].push({
+          label: 'Geen lift',
+          detail: 'trappenhuis',
+          tone: 'bad'
+        });
+      }
+    });
   }
 
   return result;
