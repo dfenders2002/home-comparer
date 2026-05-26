@@ -83,6 +83,20 @@ const ROWS: RowDef[] = [
     higherBetter: true
   },
   {
+    label: 'WOZ 2023',
+    pick: (h) => h.woz?.['2023'] ?? '—',
+    numeric: (h) => h.woz?.['2023'] ?? Number.NEGATIVE_INFINITY,
+    higherBetter: true,
+    fmt: (v) => (Number.isFinite(v) ? fmtEURk(v) : '—')
+  },
+  {
+    label: 'WOZ 2024',
+    pick: (h) => h.woz?.['2024'] ?? '—',
+    numeric: (h) => h.woz?.['2024'] ?? Number.NEGATIVE_INFINITY,
+    higherBetter: true,
+    fmt: (v) => (Number.isFinite(v) ? fmtEURk(v) : '—')
+  },
+  {
     label: 'WOZ 2025',
     pick: (h) => h.woz?.['2025'] ?? '—',
     numeric: (h) => h.woz?.['2025'] ?? Number.NEGATIVE_INFINITY,
@@ -95,6 +109,21 @@ const ROWS: RowDef[] = [
     numeric: (_h, d) => d.wozGrowth23to25Pct ?? Number.NEGATIVE_INFINITY,
     higherBetter: true,
     fmt: (v) => (Number.isFinite(v) ? `+${v.toFixed(1)}%` : '—')
+  },
+  {
+    label: 'Bod v.s. WOZ 2025',
+    pick: (h, _d, ctx) => {
+      if (!h.woz) return '—';
+      const bid = ctx.bids[h.id] ?? h.askPrice;
+      return ((bid - h.woz['2025']) / h.woz['2025']) * 100;
+    },
+    numeric: (h, _d, ctx) => {
+      if (!h.woz) return Number.NEGATIVE_INFINITY;
+      const bid = ctx.bids[h.id] ?? h.askPrice;
+      return ((bid - h.woz['2025']) / h.woz['2025']) * 100;
+    },
+    higherBetter: false,                 // lager = bod dichter bij WOZ = minder taxatierisico
+    fmt: (v) => (Number.isFinite(v) ? `+${v.toFixed(0)}%` : '—')
   },
   {
     label: 'Huispedia p60',

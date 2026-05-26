@@ -86,87 +86,6 @@ export const HOMES: Home[] = [
     ]
   },
   {
-    id: 'azielaan-57',
-    address: 'Aziëlaan 57',
-    city: 'Alphen aan den Rijn',
-    neighborhood: 'Kerk en Zanen',
-    fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-azielaan-57/43332025/',
-    askPrice: 440_000,
-    m2: 87,
-    bouwjaar: 2016,
-    energyLabel: 'A+',
-    vveMonthly: 216,                 // €176 appartement + €40,30 parkeerplaats
-    ownParking: true,
-    outdoorSpace: 'ZW-balkon (9m²)',
-    bedrooms: 2,
-    storageM2: 16,
-    hasLift: true,
-    aptType: 'galerijflat',
-    woz: { '2023': 347_000, '2024': 369_000, '2025': 449_000 },
-    huispedia: { p40: 464_000, p60: 478_000, p80: 494_000 },
-    popularity: {
-      viewsTotal: 2330,
-      saves: 17,
-      daysOnFunda: 20,
-      listedOn: '2026-05-05'
-    },
-    renovationEstimate: 18_000,      // vloer + keuken + muren verven
-    pros: [
-      'Grootst (87m²)',
-      'Beste prijs/m² (€5.057)',
-      'Naast NS-station Alphen',
-      'Eigen parkeerplek in garage',
-      'ZW-balkon met vrij uitzicht',
-      'Volledig geïsoleerd, label A+',
-      'Koudste markt (20 dagen, lage views/dag) → biedmarge'
-    ],
-    cons: [
-      'Aan drukke weg',
-      'Renovatie nodig: vloer, keuken, muren (~€18K)',
-      'Vraagprijs boven max hypotheek bij label B-cap (maar past wel binnen A+ cap)'
-    ]
-  },
-  {
-    id: 'abel-tasmanstraat-128',
-    address: 'Abel Tasmanstraat 128',
-    city: 'Alphen aan den Rijn',
-    neighborhood: 'Bedrijventerrein Rijnhaven-Oost',
-    fundaUrl: 'https://www.funda.nl/detail/koop/alphen-aan-den-rijn/appartement-abel-tasmanstraat-128/80813340/',
-    askPrice: 479_000,
-    m2: 85,
-    bouwjaar: 2022,
-    energyLabel: 'A++',
-    vveMonthly: 206,                 // €206,37 — pure VvE bijdrage
-    monthlyExtras: { gas: 134 },     // stookkosten inbegrepen via VvE-totaal €340
-    ownParking: true,
-    outdoorSpace: 'balkon-west',
-    bedrooms: 2,
-    storageM2: 6,
-    hasLift: true,
-    aptType: 'corridorflat',
-    woz: { '2023': 368_000, '2024': 401_000, '2025': 459_000 },
-    huispedia: { p40: 502_000, p60: 517_000, p80: 534_000 },
-    popularity: {
-      viewsTotal: 1435,
-      saves: 17,
-      daysOnFunda: 6,
-      listedOn: '2026-05-19'
-    },
-    pros: [
-      'Nieuwste (2022)',
-      'Beste label (A++)',
-      'Laagste energiekosten',
-      'Eigen parkeerplek',
-      'WTW-installatie'
-    ],
-    cons: [
-      'Duurst (€479K)',
-      'Hoogste prijs/m² (€5.635)',
-      'Wijk is bedrijventerrein-achtig',
-      'Hoge concurrentie verwacht'
-    ]
-  },
-  {
     id: 'sacharovlaan-41',
     address: 'Dr. A.D. Sacharovlaan 41',
     city: 'Alphen aan den Rijn',
@@ -187,26 +106,26 @@ export const HOMES: Home[] = [
     woz: { '2023': 308_000, '2024': 314_000, '2025': 340_000 },
     huispedia: undefined,        // niet op Huispedia te vinden
     popularity: {
-      viewsTotal: 3248,
+      viewsTotal: 3258,
       saves: 25,
-      daysOnFunda: 32,
+      daysOnFunda: 33,
       listedOn: '2026-04-23'
     },
-    renovationEstimate: 30_000,      // vloer + keuken + muren + badkamer
+    renovationEstimate: 20_000,      // vloer + keuken + stuc + schilderen (zonder badkamer)
     pros: [
       'Goedkoopst per m² (€4.762)',
       '84m² ruime indeling',
       'Lage energiekosten (€60/mnd gas+elektra)',
       'Lift in complex, inpandige berging',
       'Centraal — loopafstand centrum + NS-station',
-      '32 dagen op Funda → koudste van de 4 → biedmarge'
+      'Koude markt → biedmarge'
     ],
     cons: [
       'Hoogste VvE (€268)',
       'Geen eigen parkeerplek',
-      'Veel renovatie nodig: vloer, keuken, muren, badkamer (~€30K)',
-      'Badkamer met ligbad is gedateerd',
-      'Bouwjaar 1994 (op één na oudste)'
+      'Renovatie nodig: vloer, keuken, stuc, schilderen (~€20K, ~4-6 weken werk)',
+      'Badkamer (ligbad) gedateerd maar functioneel — later op te knappen',
+      'Bouwjaar 1994'
     ]
   }
 ];

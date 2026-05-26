@@ -291,6 +291,45 @@ function HeroCard({
         </div>
       </div>
 
+      {/* WOZ trend + taxatie-risico */}
+      {home.woz && (
+        <div className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-border bg-bg/30 px-3 py-2 text-[11px]">
+          <div className="flex items-center gap-1.5">
+            <span className="uppercase tracking-wide text-muted">WOZ</span>
+            <span className="font-mono text-text">
+              €{Math.round(home.woz['2023'] / 1000)}K
+            </span>
+            <span className="text-muted">→</span>
+            <span className="font-mono text-text">
+              €{Math.round(home.woz['2024'] / 1000)}K
+            </span>
+            <span className="text-muted">→</span>
+            <span className="font-mono text-text">
+              €{Math.round(home.woz['2025'] / 1000)}K
+            </span>
+            {derived.wozGrowth23to25Pct != null && (
+              <span className="text-muted">
+                (+{derived.wozGrowth23to25Pct.toFixed(1)}%)
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="uppercase tracking-wide text-muted">
+              Bod v.s. WOZ '25
+            </span>
+            <span
+              className={`font-mono ${
+                ((bid - home.woz['2025']) / home.woz['2025']) * 100 > 25
+                  ? 'text-warn'
+                  : 'text-text'
+              }`}
+            >
+              +{(((bid - home.woz['2025']) / home.woz['2025']) * 100).toFixed(0)}%
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Signature tags — good / bad highlights */}
       {tags.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-1.5">
